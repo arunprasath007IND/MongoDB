@@ -1,0 +1,138 @@
+EXPERIMENT – 1 (Basic Collection Creation & Dropping)
+🔹 Aim
+To create and drop a collection in the CMS database.
+
+🔹 Query
+
+use cmsDB
+
+db.createCollection("temp_content")
+
+show collections
+
+db.temp_content.drop()
+🔹 Result
+The collection temp_content was successfully created and dropped.
+
+🔹 EXPERIMENT – 2 (Collection with Required Fields & Validation)
+🔹 Aim
+To create a collection with schema validation for required fields.
+
+🔹 Query
+
+db.createCollection("users", {
+  validator: {
+    $jsonSchema: {
+      bsonType: "object",
+      required: ["username", "email", "role"],
+      properties: {
+        username: { bsonType: "string" },
+        email: { bsonType: "string" },
+        role: { bsonType: "string" },
+        age: { bsonType: ["int", "null"] },
+        isActive: { bsonType: "bool" }
+      }
+    }
+  }
+})
+🔹 Valid Insert
+
+db.users.insertOne({
+  username: "arun123",
+  email: "arun@gmail.com",
+  role: "admin",
+  age: 21,
+  isActive: true
+})
+🔹 Invalid Insert
+
+db.users.insertOne({
+  username: "test",
+  role: "editor"
+})
+🔹 Result
+Validation rules enforced required fields. Invalid document insertion failed.
+
+🔹 EXPERIMENT – 3 (Advanced Validation Rules)
+🔹 Aim
+To apply advanced validation like enum, range, and pattern.
+
+🔹 Query
+
+db.createCollection("posts", {
+  validator: {
+    $jsonSchema: {
+      bsonType: "object",
+      required: ["title", "category", "author", "views"],
+      properties: {
+        title: {
+          bsonType: "string",
+          minLength: 5,
+          maxLength: 150
+        },
+        category: {
+          enum: ["Technology", "Education", "Lifestyle", "News"]
+        },
+        author: { bsonType: "string" },
+        views: {
+          bsonType: "int",
+          minimum: 0
+        },
+        postId: {
+          bsonType: ["string", "null"],
+          pattern: "^POST[0-9]{4}$"
+        }
+      }
+    }
+  },
+  validationLevel: "strict",
+  validationAction: "error"
+})
+🔹 Result
+Advanced validation ensures correct post data and restricts invalid entries.
+
+🔹 EXPERIMENT – 4 (Modify Validation on Existing Collection)
+🔹 Aim
+To add validation rules to an existing collection.
+
+🔹 Query
+
+db.createCollection("comments")
+
+db.runCommand({
+  collMod: "comments",
+  validator: {
+    $jsonSchema: {
+      bsonType: "object",
+      required: ["commentId", "user", "content"],
+      properties: {
+        commentId: {
+          bsonType: "string",
+          pattern: "^COM[0-9]{5}$"
+        },
+        user: {
+          bsonType: "string",
+          minLength: 3
+        },
+        content: {
+          bsonType: "string",
+          minLength: 5
+        }
+      }
+    }
+  },
+  validationLevel: "moderate"
+})
+🔹 Result
+Validation rules were successfully added to the existing comments collection.
+
+🔹 EXPERIMENT – 5 (View Validation Rules)
+🔹 Aim
+To view validation rules of collections.
+
+🔹 Query
+
+db.getCollectionInfos({ name: "posts" })
+
+🔹 Result
+Validation schema of the posts collection was successfully displayed.
